@@ -16,6 +16,7 @@
 from openpyxl import load_workbook, Workbook
 
 import os
+import shutil
 
 filename = "FixedHierarchy.xlsx"
 filepath = ""
@@ -25,6 +26,22 @@ wb = load_workbook(filename, data_only = True)
 sheet = wb['FixedHierarchy']
 row_count = sheet.max_row
 files = [["","",""] for y in range(row_count-1)] # Headers not needed
+
+
+
+def copy_rename(newFileFolder, oldFileName, newFileName):
+    # assume the source is in the current directory
+    srcDir = os.curdir
+    dstDir = os.path.join(os.curdir, newFileFolder)
+    srcFile = os.path.join(srcDir, oldFileName)
+
+    shutil.copy(srcFile, dstDir)
+
+    dstFile = os.path.join(dstDir, oldFileName)
+    newDstFileName = os.path.join(dstDir, newFileName)
+    os.rename(dstFile, newDstFileName)
+
+
 r = 2
 while r <= row_count:
 
@@ -65,13 +82,13 @@ while r <= row_count:
         filepath = "#N/A"
     else:
         filepath = region + "\\"
-        if (CP != "#N/A"):
+        if (CP != "#N/A" and CP != "None"):
             filepath += CP + "\\"
-            if (programme != "#N/A"):
+            if (programme != "#N/A" and programme != "None"):
                 filepath +=  programme + "\\"
-                if (project != "#N/A"):
+                if (project != "#N/A" and project != "None"):
                     filepath += project + "\\"
-                    if (subProject != "#N/A"):
+                    if (subProject != "#N/A"and subProject != "None"):
                         filepath += subProject + "\\"
 
     files[r - 2][0] = filepath
@@ -85,12 +102,13 @@ while r <= row_count:
 i = 0
 while i < len(files):
     targetFilePath = files[i][0].replace(':','')
+    # Check if folder exists, and if it doesn't then create it
     if not (targetFilePath == "#N/A"):
-
         if not (os.path.isdir(targetFilePath)):
             os.makedirs(targetFilePath)
-     #   except:
-     # #      print("could not make folder " + files[i][0])
+        # copy and rename
+        # assume the source is in the current directory
+        copy_rename(targetFilePath, files[i][1], files[i][2])
+
 
     i += 1
-
